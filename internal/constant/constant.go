@@ -1,6 +1,9 @@
 package constant
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 var (
 	// allow change in test
@@ -30,6 +33,9 @@ var (
 	</body>
 	</html>
 	`
+
+	VersionPrinter = fmt.Sprintf("=%s\nGitBranch=%s\nGitRevision=%s\nBuildTime=%s",
+		Version, GitBranch, GitRevision, BuildTime)
 )
 
 const (
@@ -52,4 +58,5 @@ const (
 	// todo add udp buffer size
 	BUFFER_POOL_SIZE = 1024      // suport 512 connections
 	BUFFER_SIZE      = 20 * 1024 // 20KB the maximum packet size of shadowsocks is about 16 KiB
+
 )

@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net"
 	"os"
-	"os/exec"
 	"os/signal"
 	"sync"
 	"syscall"
@@ -17,7 +16,6 @@ import (
 	"github.com/Ehco1996/ehco/internal/constant"
 	"github.com/Ehco1996/ehco/internal/logger"
 	"github.com/Ehco1996/ehco/internal/relay"
-	"github.com/Ehco1996/ehco/internal/tls"
 	"github.com/Ehco1996/ehco/internal/web"
 	"github.com/Ehco1996/ehco/pkg/xray"
 )
@@ -31,21 +29,6 @@ var ConfigPath string
 var WebPort int
 var WebToken string
 var EnablePing bool
-var SystemFilePath = "/etc/systemd/system/ehco.service"
-
-const SystemDTMPL = `# Ehco service
-[Unit]
-Description=ehco
-After=network.target
-
-[Service]
-LimitNOFILE=65535
-ExecStart=/root/ehco -c ""
-Restart=always
-
-[Install]
-WantedBy=multi-user.target
-`
 
 func createCliAPP() *cli.App {
 	cli.VersionPrinter = func(c *cli.Context) {
@@ -124,29 +107,6 @@ func createCliAPP() *cli.App {
 		},
 	}
 
-	app.Commands = []*cli.Command{
-		{
-			Name:  "install",
-			Usage: "install ehco systemd service",
-			Action: func(c *cli.Context) error {
-				fmt.Printf("Install ehco systemd file to `%s`\n", SystemFilePath)
-
-				if _, err := os.Stat(SystemFilePath); err != nil && os.IsNotExist(err) {
-					f, _ := os.OpenFile(SystemFilePath, os.O_CREATE|os.O_WRONLY, 0644)
-					if _, err := f.WriteString(SystemDTMPL); err != nil {
-						logger.Fatal(err)
-					}
-					f.Close()
-				}
-
-				command := exec.Command("vi", SystemFilePath)
-				command.Stdin = os.Stdin
-				command.Stdout = os.Stdout
-				return command.Run()
-			},
-		},
-	}
-	return app
 }
 
 func loadConfig() (cfg *config.Config, err error) {
@@ -176,14 +136,6 @@ func loadConfig() (cfg *config.Config, err error) {
 		}
 	}
 
-	// init tls
-	for _, cfg := range cfg.RelayConfigs {
-		if cfg.ListenType == constant.Listen_WSS || cfg.ListenType == constant.Listen_MWSS ||
-			cfg.TransportType == constant.Transport_WSS || cfg.TransportType == constant.Transport_MWSS {
-			tls.InitTlsCfg()
-			break
-		}
-	}
 	return cfg, nil
 }
 

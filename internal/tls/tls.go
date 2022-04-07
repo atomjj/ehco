@@ -22,7 +22,7 @@ var (
 	DefaultTLSConfig *tls.Config
 )
 
-func InitTlsCfg() {
+func InitDefaultTLSConfig() {
 	if DefaultTLSConfig != nil {
 		return
 	}
@@ -117,4 +117,8 @@ func pemBlockForKey(priv interface{}) *pem.Block {
 	default:
 		return nil
 	}
+}
+
+func init() {
+	InitDefaultTLSConfig()
 }
